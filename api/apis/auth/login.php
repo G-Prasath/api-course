@@ -10,7 +10,7 @@ ${basename(__FILE__, ".php")} = function(){
             $login = new Login($username, $password);
             $data = [
                 "error" => "Login Success",
-                "token" => $login->getLoginToken()
+                "tokens" => $login->getLoginTokens()
             ];
             $data = $this->json($data);
             $this->response($data, 200);

@@ -1,12 +1,13 @@
 <?php
 require_once($_SERVER['DOCUMENT_ROOT']."/apis/api/libs/dbConnection.class.php");
 require_once($_SERVER['DOCUMENT_ROOT']."/apis/api/libs/user.class.php");
+require_once($_SERVER['DOCUMENT_ROOT']."/apis/api/libs/oauth.class.php");
 require $_SERVER['DOCUMENT_ROOT'].'/apis/vendor/autoload.php';
 
 class Login{
     private $db;
     private $isTokenAuth = false;
-    private $loginToken = null;
+    private $loginTokens = null;
 
     public function __construct($username, $password = NULL){
         $this->db = dbconnection::getConnection(); 
@@ -34,7 +35,7 @@ class Login{
                 if(!$user->isActive()){
                     throw new Exception("Please Check Your Email and Active Your Account");
                 }
-                $this->loginToken = $this->addSession();
+                $this->loginTokens = $this->addSession();
             }
             else{
                 throw new Exception("Password Miss Match");
@@ -42,19 +43,16 @@ class Login{
         }
     }
 
-    public function getLoginToken(){
-        return $this->loginToken;
+    public function getLoginTokens(){
+        return $this->loginTokens;
     }
 
     private function addSession(){
-        $token = Login::generateRandomToken(16);
-        $query = "INSERT INTO `apis`.`session` (`username`, `token`) VALUES ('$this->username', '$token')";
-        if(mysqli_query($this->db, $query)){
-            return $token;
-        }
-        else{
-            throw new Exception("Unable to Create Token");
-        }
+        $oauth = new OAuth($this->username);
+        $session = $oauth->newSession();
+        return $session;
+
+        
     }
 
     public static function generateRandomToken($len){
